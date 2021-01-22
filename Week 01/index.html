@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> TicTacToe </title>
+</head>
+<style>
+    .cell{
+        display: inline-block;
+        width: 100px;
+        height: 100px;
+        text-align: center;
+        border: 1px solid #dedede;
+        background: green;
+        text-align: center;
+        color: red;
+        font-size: 50px;
+        vertical-align: middle;
+        box-sizing: border-box;
+        line-height: 100px;
+        cursor: pointer;
+    }
+</style>
+<body>
+    <div id="board"></div>
+</body>
+
+<script>
+    let pattern = [
+        [0,0,2],
+        [0,1,0],
+        [0,0,0]
+    ];
+    let color = 1; // 当前不同状态的值 
+    const show = (pattern)=>{
+        const board = document.querySelector("#board");
+        board.innerHTML = "";
+        for (let i=0;i < 3;i++) {
+            for (let j=0;j < 3;j++) {
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.innerText = pattern[i][j]===1 ? "x" : pattern[i][j]===2 ? "o": "";
+                cell.addEventListener("click",()=>move(j,i)) 
+                board.appendChild(cell) 
+            }
+            board.appendChild(document.createElement("br"))
+        }
+    }
+    const move = (x,y)=>{
+        if (pattern[y][x]) return 
+        pattern[y][x] = color;
+        if (check(pattern,color)) {
+           let  winTip = color === 2 ? "o is win " : "x is win ";
+           alert(winTip)
+        }
+        color = 3 - color;
+        if (willWin(pattern,color)) {
+           let  willWinTip = color === 2 ? "o is winWin " : "x is winWin ";
+           alert(willWinTip)
+        }
+        show(pattern)
+    }
+    const check = (pattern,color)=>{
+        // 横线情况
+        for (let i=0;i < 3;i++) {
+            let win = true;
+            for (let j=0;j < 3;j++) {
+                if (pattern[i][j] !== color) {
+                    win = false
+                }
+            }
+            if (win) return true
+        }
+        // 竖线情况
+        for (let i=0;i < 3;i++) {
+            let win = true;
+            for (let j=0;j < 3;j++) {
+                if (pattern[j][i] !== color) {
+                    win = false
+                }
+            }
+            if (win) return true 
+        }
+        // 斜线顺着
+        {
+            let win = true;
+            for (let j=0;j < 3;j++) {
+                if (pattern[j][j] !== color ) {
+                    win = false
+                }
+            }
+            if (win) return true
+        }
+        // 斜线反着
+        {
+            let win = true;
+            for (let i=0;i < 3;i++) {
+                if (pattern[i][2-i] !== color ) {
+                    win = false
+                }
+            }
+            if (win) return true
+        }
+    }
+    const clone = pattern => JSON.parse(JSON.stringify(pattern));
+    const willWin = (pattern,color)=>{
+        for (let i=0;i<3;i++) {
+            for (let j=0;j<3;j++) {
+                if (pattern[i][j]) {
+                    continue;
+                }
+                let temp = clone(pattern);
+                temp[i][j] = color
+                if (check(temp,color)) {
+                    return [j,i]
+                }
+            }
+        }
+        return null
+    }
+    // AI策略
+    const bestChoise = (pattern,color)=>{
+        let p;
+        if (p = willWin(pattern,color)) {
+            return {
+                point: p,
+                result: 1
+            }
+        }
+        let result = -2;
+        let point = null;
+        for (let i=0;i<3;i++) {
+            for (let j=0;j<3;j++) {
+                if (pattern[i][j]) {
+                    continue;
+                }
+                let temp = clone(pattern);
+                temp[i][j] = color;
+                let r = bestChoise(temp,3 - color).result;
+                if (-r > result) {
+                    result = -r;
+                    point = [j,i]
+                }
+            }
+        }
+        return {
+            point: point,
+            result: point ? result : 0
+        }
+    }
+    console.log(bestChoise(pattern,color))
+    
+    show(pattern)
+</script>
+</html>
